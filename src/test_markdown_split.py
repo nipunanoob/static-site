@@ -1,6 +1,6 @@
 import unittest
 
-from markdown_split import split_nodes_delimiter
+from markdown_split import split_nodes_delimiter,split_nodes_image,split_nodes_link
 from textnode import TextNode,TextType
 
 class TestMarkdownSplit(unittest.TestCase):
@@ -45,3 +45,65 @@ class TestMarkdownSplit(unittest.TestCase):
             TextNode("This is edge", TextType.CODE),
             TextNode(" delimiter", TextType.TEXT)
         ])
+    def test_split_single_image(self):
+        node = TextNode("This is text with a image ![rick roll](https://i.imgur.com/aKaOqIh.gif)",TextType.TEXT)
+        self.assertEqual(split_nodes_image([node]),
+                         [TextNode("This is text with a image ",TextType.TEXT, None),
+                         TextNode("rick roll", TextType.IMAGE,"https://i.imgur.com/aKaOqIh.gif")])
+    def test_split_multiple_image(self):
+        node = TextNode("This is text with a image ![rick roll](https://i.imgur.com/aKaOqIh.gif) and another ![obi wan](https://i.imgur.com/fJRm4Vk.jpeg)",TextType.TEXT)
+        self.assertEqual(split_nodes_image([node]),
+                         [TextNode("This is text with a image ",TextType.TEXT, None),
+                         TextNode("rick roll", TextType.IMAGE,"https://i.imgur.com/aKaOqIh.gif"),
+                         TextNode(" and another ",TextType.TEXT),
+                         TextNode("obi wan", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg")])
+    def test_split_image_beginning(self):
+        node = TextNode("![to boot dev](https://www.boot.dev) image at start",TextType.TEXT)
+        self.assertEqual(split_nodes_image([node]),
+                         [TextNode("to boot dev", TextType.IMAGE,"https://www.boot.dev"),
+                         TextNode(" image at start", TextType.TEXT, None)])
+    def test_split_image_end(self):
+        node = TextNode("image at end ![to youtube](https://www.youtube.com/@bootdotdev) ",TextType.TEXT)
+        self.assertEqual(split_nodes_image([node]),
+                         [TextNode("image at end ", TextType.TEXT, None),
+                         TextNode("to youtube", TextType.IMAGE,"https://www.youtube.com/@bootdotdev")])
+    def test_split_empty_image(self):
+        node = TextNode("no image here bozo",TextType.TEXT)
+        self.assertEqual(split_nodes_image([node]),
+                         [TextNode("no image here bozo", TextType.TEXT, None)])
+    def test_split_invalid_image(self):
+        node = TextNode("no correct image here bozo [to youtube](youtube.com)",TextType.TEXT)
+        self.assertEqual(split_nodes_image([node]),
+                         [TextNode("no correct image here bozo [to youtube](youtube.com)",TextType.TEXT)])
+    def test_split_single_link(self):
+        node = TextNode("This is text with a link [to boot dev](https://www.boot.dev) ",TextType.TEXT)
+        self.assertEqual(split_nodes_link([node]),
+                         [TextNode("This is text with a link ",TextType.TEXT, None),
+                         TextNode("to boot dev", TextType.LINK,"https://www.boot.dev")])
+    def test_split_multiple_link(self):
+        node = TextNode("This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)",TextType.TEXT)
+        self.assertEqual(split_nodes_link([node]),
+                         [TextNode("This is text with a link ",TextType.TEXT, None),
+                         TextNode("to boot dev", TextType.LINK,"https://www.boot.dev"),
+                         TextNode(" and ", TextType.TEXT, None),
+                         TextNode("to youtube", TextType.LINK,"https://www.youtube.com/@bootdotdev")])
+    def test_split_link_beginning(self):
+        node = TextNode("[to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)",TextType.TEXT)
+        self.assertEqual(split_nodes_link([node]),
+                         [TextNode("to boot dev", TextType.LINK,"https://www.boot.dev"),
+                         TextNode(" and ", TextType.TEXT, None),
+                         TextNode("to youtube", TextType.LINK,"https://www.youtube.com/@bootdotdev")])
+    def test_split_link_end(self):
+        node = TextNode("end [to youtube](https://www.youtube.com/@bootdotdev) ",TextType.TEXT)
+        self.assertEqual(split_nodes_link([node]),
+                         [TextNode("end ", TextType.TEXT, None),
+                         TextNode("to youtube", TextType.LINK,"https://www.youtube.com/@bootdotdev")])
+    def test_split_empty_link(self):
+        node = TextNode("no link here bozo",TextType.TEXT)
+        self.assertEqual(split_nodes_link([node]),
+                         [TextNode("no link here bozo", TextType.TEXT, None)])
+    def test_split_invalid_link(self):
+        node = TextNode("no correct link here bozo [to youtube](youtube.com",TextType.TEXT)
+        self.assertEqual(split_nodes_link([node]),
+                         [TextNode("no correct link here bozo [to youtube](youtube.com",TextType.TEXT)])
+    
