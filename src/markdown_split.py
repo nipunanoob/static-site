@@ -1,5 +1,16 @@
 from textnode import TextNode, TextType
 from extract_markdown import extract_markdown_links,extract_markdown_images
+import re
+
+def text_to_textnodes(text):
+    nodes = [TextNode(text, TextType.TEXT)]
+    new_nodes = split_nodes_image(nodes)
+    new_nodes = split_nodes_link(new_nodes)
+    new_nodes = split_nodes_delimiter(new_nodes, "**", TextType.BOLD) 
+    new_nodes = split_nodes_delimiter(new_nodes, "*", TextType.ITALIC) 
+    new_nodes = split_nodes_delimiter(new_nodes, "`", TextType.CODE) 
+    return new_nodes
+
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     new_nodes_list = []
@@ -59,6 +70,22 @@ def split_nodes_image(old_nodes):
             new_nodes_list.append(TextNode(section[1],TextType.TEXT))
     return new_nodes_list
 
-# node = TextNode("This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)",TextType.TEXT)
-# node = TextNode(" [boot](https://www.boot.dev) test [link](https://www.test.dev)",TextType.TEXT)
-# print(split_nodes_link([node]))
+def markdown_to_blocks(markdown):
+    markdown = markdown.replace("\r\n", "\n")
+    block_list = re.split(r'\n\s*\n',markdown)
+    block_list = [block.strip() for block in block_list if block.strip()] 
+    return block_list
+
+test_md = """# Header
+  
+     
+  
+Paragraph
+with spaces
+   
+* List
+   
+"""
+result = markdown_to_blocks(test_md)
+print(result)
+# What do you get?

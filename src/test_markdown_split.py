@@ -1,6 +1,7 @@
 import unittest
+from textwrap import dedent
 
-from markdown_split import split_nodes_delimiter,split_nodes_image,split_nodes_link
+from markdown_split import split_nodes_delimiter,split_nodes_image,split_nodes_link,text_to_textnodes,markdown_to_blocks
 from textnode import TextNode,TextType
 
 class TestMarkdownSplit(unittest.TestCase):
@@ -106,4 +107,75 @@ class TestMarkdownSplit(unittest.TestCase):
         node = TextNode("no correct link here bozo [to youtube](youtube.com",TextType.TEXT)
         self.assertEqual(split_nodes_link([node]),
                          [TextNode("no correct link here bozo [to youtube](youtube.com",TextType.TEXT)])
+    def test_empty_text_to_text_node(self):
+        text = ""
+        self.assertEqual(text_to_textnodes(text),[])
+    def test_simple_text_to_text_node(self): 
+        text = "simple text"
+        self.assertEqual(text_to_textnodes(text),[TextNode("simple text",TextType.TEXT)])
+    def test_bold_text_to_text_node(self):
+        text = "this is **bold text**"
+        self.assertEqual(text_to_textnodes(text),[TextNode("this is ",TextType.TEXT),
+                                                  TextNode("bold text",TextType.BOLD)])
+    def test_italic_text_to_text_node(self):
+        text = "this is *italic text*"
+        self.assertEqual(text_to_textnodes(text),[TextNode("this is ",TextType.TEXT),
+                                                  TextNode("italic text",TextType.ITALIC)])
+    def test_code_text_to_text_node(self):
+        text = "this is `code text`"
+        self.assertEqual(text_to_textnodes(text),[TextNode("this is ",TextType.TEXT),
+                                                  TextNode("code text",TextType.CODE)])
+    def test_link_text_to_text_node(self):
+        text = "[here](https://example.com)"
+        self.assertEqual(text_to_textnodes(text),[TextNode("here",TextType.LINK,"https://example.com")])
+    def test_image_text_to_text_node(self):
+        text = "![image](https://example.com)"
+        self.assertEqual(text_to_textnodes(text),[TextNode("image",TextType.IMAGE,"https://example.com")])
+    def test_decorated_text_to_text_node(self):
+        text = "This is **text** with an *italic* word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        new_list = [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("text", TextType.BOLD),
+            TextNode(" with an ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" word and a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE),
+            TextNode(" and an ", TextType.TEXT),
+            TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+            TextNode(" and a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+        ]
+        self.assertEqual(text_to_textnodes(text),new_list)
     
+    def test_markdown_to_single_block(self):
+        blocks = "single block"
+        self.assertEqual(markdown_to_blocks(blocks),["single block"])
+    def test_markdown_to_multiple_blocks(self):
+        blocks = """
+        first block
+
+        second block
+        """
+        self.assertEqual(markdown_to_blocks(blocks),["first block","second block"])
+        
+    def test_markdown_to_multiple_blocks_with_weird_spacing(self):
+        blocks = dedent("""
+# Header
+
+
+
+Paragraph
+with spaces
+
+* List
+
+                    """
+                        )
+        self.assertEqual(markdown_to_blocks(blocks),['# Header', 'Paragraph\nwith spaces', '* List'])
+
+    def test_empty_markdown_to_blocks(self):
+        test = ""
+        self.assertEqual(markdown_to_blocks(test),[])
+    def test_spaces_to_blocks(self):
+        test = "    "
+        self.assertEqual(markdown_to_blocks(test),[])

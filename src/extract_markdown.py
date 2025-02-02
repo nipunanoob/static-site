@@ -8,3 +8,5 @@ def extract_markdown_images(text):
 def extract_markdown_links(text):
     link_list = re.findall("(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)",text)
     return link_list
+
+# print(extract_markdown_bold("sample **bold text** and **another**"))
