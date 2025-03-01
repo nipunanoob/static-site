@@ -56,11 +56,13 @@ class ParentNode(HTMLNode):
     def to_html(self):
         if self.tag == None:
             raise ValueError("Tag is missing in parent node")
-        elif self.children == None:
+        elif self.children == None or self.children == []:
             raise ValueError("Children must be present in parent node")
         else:
             html_tag = f"<{self.tag}>"
             for child in self.children:
+                if not isinstance(child, ParentNode) and not isinstance(child, LeafNode):
+                    raise TypeError("Children of parent node must be object of either leafnode or parentnode class")
                 html_tag += child.to_html()
             html_tag += f"</{self.tag}>"
             return html_tag
