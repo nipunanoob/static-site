@@ -1,6 +1,6 @@
 import unittest
 
-from markdown_extractor import extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link, text_to_textnodes
+from markdown_parserr import *
 from textnode import TextNode, TextType
 
 
@@ -316,6 +316,61 @@ class TestTextNode(unittest.TestCase):
         expected = []
         self.assertListEqual(expected, text_to_textnodes(text))
     
+
+    def test_markdown_to_blocks(self):
+        md = """
+This is **bolded** paragraph
+
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+
+- This is a list
+- with items
+    """
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "This is **bolded** paragraph",
+                "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
+                "- This is a list\n- with items",
+            ],
+        )
+
+
+    def test_markdown_to_single_block(self):
+        md =  """
+single block
+"""
+        expected = ["single block"]
+        self.assertListEqual(markdown_to_blocks(md), expected)
+
+    def test_markdown_to_single_block_with_newline(self):
+        md =  """
+first line
+second line
+"""
+        expected = ["first line\nsecond line"]
+        self.assertListEqual(markdown_to_blocks(md), expected)
+
+    def test_markdown_to_empty_block(self):
+        md =  """
+"""
+        expected = []
+        self.assertListEqual(markdown_to_blocks(md), expected)
+
+    def test_consecutive_new_lines(self):
+        md =  """
+first line
+
+
+
+second line
+"""
+        expected = ["first line","second line"]
+        self.assertListEqual(markdown_to_blocks(md), expected)
+
+
 
 if __name__ == "__main__":
     unittest.main()
