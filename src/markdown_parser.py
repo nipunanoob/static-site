@@ -1,6 +1,15 @@
 import re
 from textnode import TextNode,TextType
 from textnode import split_nodes_delimiter
+from enum import Enum
+
+class BlockType(Enum):
+   PARAGRAPH = "paragraph" 
+   HEADING = "heading" 
+   CODE = "code" 
+   QUOTE = "quote" 
+   UNORDERED = "unordered_list" 
+   ORDERED = "ordered_list" 
 
 def extract_markdown_images(text):
     return (re.findall(r"!\[([^\[\]]*)\]\(([^\)\(]*)\)", text))
@@ -63,3 +72,30 @@ def markdown_to_blocks(markdown):
     blocks = markdown.split("\n\n")
     stripped_blocks = list(filter(None, [block.strip() for block in blocks]))
     return stripped_blocks
+
+def check_markdown_string_in_each_line(string, lines, blocktype):
+    for line in lines:
+        if not re.search(string, line):
+            return BlockType.PARAGRAPH
+    return blocktype
+
+def block_to_block_type(block):
+    if re.search("^#{1,6} ", block) and len(block.split("\n")) == 1:
+        return BlockType.HEADING
+    else:
+        lines = block.split("\n")
+        if re.search("^```", lines[0]) and re.search("```$", lines[-1]):
+            return BlockType.CODE
+        elif re.search("^>", lines[0]):
+            return check_markdown_string_in_each_line("^>", lines[1:], BlockType.QUOTE)
+        elif re.search("^- ", lines[0]):
+            return check_markdown_string_in_each_line("^- ", lines[1:], BlockType.UNORDERED)
+        elif re.search("^1. ", lines[0]):
+            count = 1
+            for line in lines:
+                if not re.search(f"^{count}. ", line):
+                    return BlockType.PARAGRAPH
+                count += 1
+            return BlockType.ORDERED
+    return BlockType.PARAGRAPH
+    

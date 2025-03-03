@@ -370,6 +370,62 @@ second line
         expected = ["first line","second line"]
         self.assertListEqual(markdown_to_blocks(md), expected)
 
+    def test_heading_block(self):
+        block = "## heading"
+        self.assertEqual(block_to_block_type(block), BlockType.HEADING)
+
+    def test_invalid_heading_block(self):
+        block = " ###heading"
+        self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
+
+    
+    def test_code_block(self):
+        block = """```
+code block
+```"""
+        self.assertEqual(block_to_block_type(block), BlockType.CODE)
+
+    def test_invalid_code_block(self):
+        block = """```
+code block
+"""
+        self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
+
+    def test_quote_block(self):
+        block = "> quote 1\n> quote 2\n> quote 3"
+        self.assertEqual(block_to_block_type(block), BlockType.QUOTE)
+
+    def test_invalid_quote_block(self):
+        block = "> quote 1\n> quote 2\n* quote3"
+        self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
+
+    def test_unordered_block(self):
+        block = "- item1\n- item2\n- item3"
+        self.assertEqual(block_to_block_type(block), BlockType.UNORDERED)
+
+    def test_invalid_unordered_block(self):
+        block = "- item1\n- item2\n* item3"
+        self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
+
+    def test_ordered_block(self):
+        block = "1. item1\n2. item2\n3. item3"
+        self.assertEqual(block_to_block_type(block), BlockType.ORDERED)
+
+    def test_invalid_numbered_list(self):
+        block = "1. item1\n2. item2\n4. item3"
+        self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
+
+    def test_invalid_ordered_list(self):
+        block = "1. item1\n2. item2\n3.item3"
+        self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
+
+    def test_paragraph(self):
+        block = "no tricks"
+        self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
+
+    def test_invalid_multiline_heading(self):
+        block = "## heading1\n# heading2"
+        self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
 
 
 if __name__ == "__main__":
