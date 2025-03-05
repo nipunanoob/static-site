@@ -25,12 +25,14 @@ class TextNode():
 
 def text_node_to_html_node(text_node: TextNode):
     text_type_dict = {
-        TextType.TEXT: None,
         TextType.BOLD: "b",
         TextType.ITALIC: "i",
         TextType.CODE: "code" 
     }
+    if text_node.text_type == TextType.TEXT:
+        return LeafNode(None, text_node.text)
     if text_node.text_type in text_type_dict.keys():
+        # print("Before: ",LeafNode(text_type_dict[text_node.text_type],text_node.text))
         return LeafNode(text_type_dict[text_node.text_type],text_node.text)
     elif text_node.text_type == TextType.LINK:
         if text_node.url == None:
